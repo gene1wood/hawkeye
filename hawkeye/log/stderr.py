@@ -5,6 +5,21 @@
 
 from sys import stderr
 
-def log(level,message):
-    print >> stderr, level + ": " + message
+def init(options):
+    return HawkeyeLogStdErr(options)
 
+class HawkeyeLogStdErr:
+
+    def __init__(self,options):
+        # stderr has no real options, but still...
+        self._options = options
+
+    def log(self,level,message,verbose=None):
+        # act differently based on verbosity
+        # Regardless of config stderr won't print debug unless asked to with -v
+        if verbose is None:
+            if level in ['info','error','alert']:
+                print >> stderr, level + ": " + message
+        elif verbose == 1:
+            print >> stderr, level + ": " + message
+        # do nothing otherwise

@@ -4,6 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import xmltodict
+import hashlib
 
 
 # This makes a dict act like an auto-vivicating perl hash
@@ -21,7 +22,6 @@ class PerlStyleHash(dict):
 class HawkeyeParse:
     def __init__(self):
         self._boto_objects = PerlStyleHash()  # This is OK as a global
-        return self
 
     def parse(self, obj, logger=None):
         """ Takes results from boto and parses it into a normalized
@@ -41,7 +41,7 @@ class HawkeyeParse:
         output:
             normalized results of what we parsed"""
 
-        obj_type = _get_obj_type(obj)
+        obj_type = self._get_obj_type(obj)
 
         if obj_type in self._parse_table:
             # We designated a specific parser for this object type
@@ -66,7 +66,10 @@ class HawkeyeParse:
         ret = []
         for item in obj:
             ret.append(self._parser(item, depth=depth))
-        return list(set(ret))
+        try:
+            return list(set(ret))
+        except TypeError:
+            return ret
 
     def _parse_simple(self, obj, depth=0):
         """ Return the object sent to us, no further parsing needed """
@@ -94,8 +97,10 @@ class HawkeyeParse:
                 ret[key] = value
         return ret
 
-    def parse_custom_dict(obj, fields):
+    def _parse_custom_dict(self, obj, depth=0):
         """ Convert simple objects directly to a dict """
+        obj_type = self._get_obj_type(obj)
+        fields = self._dict_fields[obj_type]
         ret = dict()
         props = dir(obj)
         for item in fields:
@@ -115,12 +120,12 @@ class HawkeyeParse:
         elif 'name' in array:
             # Object doesn't have an ID, but has a name
             ret = getattr(obj, 'name')
-        elif obj_type in _boto_object_id:
+        elif obj_type in self._boto_object_id:
             # We have an ID generator for the object
-            ret = _boto_object_id[obj_type](obj)
+            ret = self._boto_object_id[obj_type](obj)
         else:
             # we only get here if we don't know what to do
-            print "No ID Fields:", obj_type, obj, _obj_to_dict(obj)
+            print "No ID Fields:", obj_type, obj, self._obj_to_dict(obj)
             ret = "None"
         return str(ret)
 
@@ -153,16 +158,16 @@ class HawkeyeParse:
         # we still want to recurse a little
         if depth < 5:
             depth += 1
-            uniq = _get_object_id(obj, obj_type)
-            if not uniq in self.self._boto_objects[obj_type]:
+            uniq = self._get_object_id(obj, obj_type)
+            if not uniq in self._boto_objects[obj_type]:
                 for name in dir(obj):
                     if not name.startswith('_'):
                         value = getattr(obj, name)
                         data = self._parser(value, depth=depth)
-                        if obj_type in _boto_null_ok:
-                            self.self._boto_objects[obj_type][uniq][name] = data
+                        if obj_type in self._boto_null_ok:
+                            self._boto_objects[obj_type][uniq][name] = data
                         elif data is not None:
-                            self.self._boto_objects[obj_type][uniq][name] = data
+                            self._boto_objects[obj_type][uniq][name] = data
             return "Reference:" + obj_type + ":" + uniq
         else:
             return None
@@ -175,10 +180,10 @@ class HawkeyeParse:
         #        break out into seperate methods when we have more routines
 
         # VPN configuration data is in XML, so lets convert to a dict of dicts
-        for key in self.self._boto_objects["VpnConnection"].keys():
-            customer_config = self.self._boto_objects["VpnConnection"][key]["customer_gateway_configuration"]
+        for key in self._boto_objects["VpnConnection"].keys():
+            customer_config = self._boto_objects["VpnConnection"][key]["customer_gateway_configuration"]
             xmldict = xmltodict.parse(customer_config)
-            self.self._boto_objects["VpnConnection"][key]["customer_gateway_configuration"] = xmldict
+            self._boto_objects["VpnConnection"][key]["customer_gateway_configuration"] = xmldict
 
     # Simple table of lambda function to create unique ids
     # ToDo:  Get rid of Lambda!
@@ -241,8 +246,8 @@ class HawkeyeParse:
         "IPPermissionsList": _parse_list,
         "InstanceStatusSet": _parse_list,
         "Details": _parse_dict,
-        "Status": lambda obj,depth=0,parent=None: _parse_custom_dict(obj,["status","details"]),
-        "RecurringCharge": lambda obj,depth=0,parent=None: _parse_custom_dict(obj,["amount","frequency"]),
+        "Status": _parse_custom_dict,
+        "RecurringCharge": _parse_custom_dict,
         "tuple": _parse_simple,
         "ELBConnection": _parse_none,
         "RDSConnection": _parse_none,
@@ -258,6 +263,13 @@ class HawkeyeParse:
         "ReadReplicaDBInstanceIdentifiers": _parse_list,
         "VolumeStatusSet": _parse_list,
         "ActionSet": _parse_list,
-        "Event": lambda obj,depth=0,parent=None: _parse_custom_dict(obj,["code","description","not_after","not_before"]),
-        "StatusInfo": lambda obj,depth=0,parent=None: _parse_custom_dict(obj,["status","normal","message","status_type"]),
+        "Event": _parse_custom_dict,
+        "StatusInfo": _parse_custom_dict,
+    }
+
+    _dict_fields = {
+        "Status": ["status","details"],
+        "RecurringCharge": ["amount","frequency"],
+        "Event": ["code","description","not_after","not_before"],
+        "StatusInfo": ["status","normal","message","status_type"],
     }

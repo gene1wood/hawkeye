@@ -16,12 +16,11 @@ from boto.exception import EC2ResponseError,BotoServerError
 # Note:  This is a class because it's intended to have some more functionality later.
 class HawkeyeScrape:
 
-    def _init(self,key_id,access_key,logger=None):
+    def __init__(self,key_id,access_key,logger=None):
         """ Take our API keys, return ourself """
         self._key_id = key_id
         self._access_key = access_key
         self._logger = logger
-        return self
 
     def _query_api(self,region,api,conn,method):
         """ Call boto, and catch known errors! """
@@ -59,8 +58,8 @@ class HawkeyeScrape:
             if "name" in dir(region): # some regions are not built-out yet
                 for api in self._boto_apis:
                     conn = api.connect_to_region(region.name,aws_access_key_id=self._key_id,aws_secret_access_key=self._access_key)
-                    for method in _get_all_get_all(conn):
-                        ret.append(_query_api(region,api,conn,method))
+                    for method in self._get_all_get_all(conn):
+                        ret.append(self._query_api(region,api,conn,method))
         return ret
 
     # Here's the API's we're gonna query

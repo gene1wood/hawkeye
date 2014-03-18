@@ -6,80 +6,54 @@
 # ToDo:  Add module options
 
 class HawkeyeLog:
-    def __init__(self,modules={}):
-        _check_modules(modules) # If we return, awesome!
+    def __init__(self,modules,verbose):
+        self._verbose = verbose
         for key in modules.keys():
-            _initialize_module(modules[key])
-        return self
+            self._initialize_module(key,modules[key])
 
-    # This is subject to change, but the theory is sound
-    # ToDo: Create better verbosity for the error messages
-    # ToDo: Add module/levels type checking
-    def _check_modules(modules):
-        if type(modules) == dict:
-            raise error("No logging modules supplied!")
-        if len(modules) < 1:
-            raise error("No logging modules suplied!")
-        for key,value in modules:
-            if type(value) == dict:
-                raise error("Improperly formed configuration for " + str(key))
-            if "module" not in value:
-                raise error("No 'module' value set for " + str(key))
-            if "levels" not in value:
-                raise error("No configured logging levels set for " + str(key))
-        # If we make it here, it's safe-ish to continue.
-
-    # I don't like this, redo it.
-    def _initialize_module(module):
-        module = _import_module(module["name"])
+    def _initialize_module(self,mod,options):
+        module = self._import_module(mod,options['options'])
         if module is not None:
-            for level in module["levels"].split("\s*,\s*"):
+            for level in options["levels"]:
                 if level in self._levels:
                     level[level].append(module)
+        else:
+            print "error:  Logging module " + mod + " not found."
+            print "        Check your configuration and try again."
 
-    def _import_module(name):
+    def _import_module(self,name,options):
         #ImportError: No module named something.boto
         for alias in [name, "hawkeye.log." + name]:
             try:
-                return __import__(name)
+                module = __import__(alias)
+                print alias,module
+                return module.init(options)
             except ImportError:
-                pass
+                pass # ignore import errors
         return None
 
     # todo: add more message sending options here, but for now all we're sending is strings
     # we want varying degrees of verbosity from a message so each module can choose how much it communicates
-    def log(level,message):
+    def _log(self,level,message):
         for module in self._levels[level]:
-            module.log(level,message)
+            module.log(level,message,self._verbose)
 
-    def debug(message):
-        log('debug', message)
+    def debug(self,message):
+        self._log('debug', message)
 
-    def info(message):
-        log('info', message)
+    def info(self,message):
+        self._log('info', message)
 
-    def notice(message):
-        log('notice', message)
+    def error(self,message):
+        self._log('error', message)
 
-    def warn(message):
-        log('warn', message)
-
-    def error(message):
-        log('error', message)
-
-    def crit(message):
-        log('crit', message)
-
-    def alert(message):
-        log('alert', message)
+    def alert(self,message):
+        self._log('alert', message)
 
     _levels = {
         "debug": [],
         "info": [],
-        "notice": [],
-        "warn": [],
         "error": [],
-        "crit": [],
         "alert": [],
     }
 
