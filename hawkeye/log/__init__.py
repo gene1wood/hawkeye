@@ -16,7 +16,7 @@ class HawkeyeLog:
         if module is not None:
             for level in options["levels"]:
                 if level in self._levels:
-                    level[level].append(module)
+                    self._levels[level].append(module)
         else:
             print "error:  Logging module " + mod + " not found."
             print "        Check your configuration and try again."
@@ -26,7 +26,9 @@ class HawkeyeLog:
         for alias in [name, "hawkeye.log." + name]:
             try:
                 module = __import__(alias)
-                print alias,module
+                components = alias.split('.')
+                for comp in components[1:]:
+                    module = getattr(module, comp)
                 return module.init(options)
             except ImportError:
                 pass # ignore import errors
