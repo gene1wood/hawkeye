@@ -16,7 +16,7 @@ from boto.exception import EC2ResponseError,BotoServerError
 # Note:  This is a class because it's intended to have some more functionality later.
 class HawkeyeScrape:
 
-    def __init__(self,key_id,access_key,logger=None):
+    def __init__(self,key_id,access_key,logger):
         """ Take our API keys, return ourself """
         self._key_id = key_id
         self._access_key = access_key
@@ -31,9 +31,9 @@ class HawkeyeScrape:
         # ToDo:  Add more granularity to error handling
         # Why were we blocked from quering?
         except EC2ResponseError, e:
-            print method, api.__name__, e
+            self._logger.debug(str([method, api.__name__, e]))
         except BotoServerError, e:
-            print method, api.__name__, e
+            self._logger.debug(str([method, api.__name__, e]))
         return ret
 
     def _get_all_get_all(self, conn):
@@ -93,6 +93,7 @@ class HawkeyeScrape:
         # These are depreciated, do not use.
         "get_all_vmtypes",
         "get_all_logs",
+        "get_all_instance_types",
         # This does not work in all regions
         # ToDo: write exception handler so we can use it.
         "get_all_placement_groups",

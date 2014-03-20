@@ -20,8 +20,9 @@ class PerlStyleHash(dict):
 
 # Note:  This is a class because it's intended to have more functionality later
 class HawkeyeParse:
-    def __init__(self):
+    def __init__(self,logger):
         self._boto_objects = PerlStyleHash()  # This is OK as a global
+        self._logger = logger
 
     def parse(self, obj, logger=None):
         """ Takes results from boto and parses it into a normalized
@@ -125,7 +126,7 @@ class HawkeyeParse:
             ret = self._boto_object_id[obj_type](obj)
         else:
             # we only get here if we don't know what to do
-            print "No ID Fields:", obj_type, obj, self._obj_to_dict(obj)
+            self._logger.debug(str(["No ID Fields:", obj_type, obj, self._obj_to_dict(obj)]))
             ret = "None"
         return str(ret)
 
@@ -255,7 +256,7 @@ class HawkeyeParse:
         "ListElement": _parse_list,
         "EventSet": _parse_list,
         "PendingModifiedValues": _parse_dict,
-        "Policies": _parse_list,
+        #"Policies": _parse_list,
         "AppCookieStickiness": _parse_list,
         "LBCookieStickiness": _parse_list,
         "Other": _parse_list,

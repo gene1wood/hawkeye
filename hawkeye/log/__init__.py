@@ -23,7 +23,7 @@ class HawkeyeLog:
 
     def _import_module(self,name,options):
         #ImportError: No module named something.boto
-        for alias in [name, "hawkeye.log." + name]:
+        for alias in ["hawkeye.log." + name, name]:
             try:
                 module = __import__(alias)
                 components = alias.split('.')

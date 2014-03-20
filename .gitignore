@@ -1,1 +1,4 @@
 /tmp
+/build
+/dist
+/hawkeye.egg-info

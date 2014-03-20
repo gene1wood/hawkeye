@@ -20,6 +20,6 @@ class HawkeyeLogStdErr:
         if verbose is None:
             if level in ['info','error','alert']:
                 print >> stderr, level + ": " + message
-        elif verbose == 1:
+        elif verbose == "verbose":
             print >> stderr, level + ": " + message
         # do nothing otherwise
