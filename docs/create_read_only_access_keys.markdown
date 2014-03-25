@@ -1,4 +1,4 @@
-# How to create an read-only AWS access keyQ
+# How to create an read-only AWS access key
 
 This document was written in March 2014 as a step-by-step guide to create access keys with read-only permissions on Amazon AWS.
 
