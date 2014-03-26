@@ -3,4 +3,5 @@
 /dist
 /hawkeye.egg-info
 *.pyc
-/docs/build/*
+/docs/build/doctrees
+/docs/build/html
