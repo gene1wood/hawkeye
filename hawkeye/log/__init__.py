@@ -5,24 +5,35 @@
 
 # ToDo:  Add module options
 
+import sys
+
 class HawkeyeLog:
     def __init__(self,modules,verbose):
         self._verbose = verbose
-        for key in modules.keys():
-            self._initialize_module(key,modules[key])
+        for item in modules:
+            self._initialize_module(item)
 
-    def _initialize_module(self,mod,options):
-        module = self._import_module(mod,options['options'])
-        if module is not None:
-            for level in options["levels"]:
+    def _initialize_module(self,mod):
+        name = mod.get('module')
+        if name is not None:
+            module = self._import_module(name,mod)
+            if module is not None:
+                self._add_to_levels(mod,module)
+            else:
+                sys.exit("Logging module named " + str(name) + " not found.")
+        else:
+            sys.exit("No 'module' element specified in log module configuration")
+
+    def _add_to_levels(self,mod,module):
+        levels = mod.get('levels')
+        if levels is not None:
+            for level in mod['levels']:
                 if level in self._levels:
                     self._levels[level].append(module)
         else:
-            print "error:  Logging module " + mod + " not found."
-            print "        Check your configuration and try again."
+            sys.exit("No logging levels specified for " + str(mod.get(module)) + ".")
 
     def _import_module(self,name,options):
-        #ImportError: No module named something.boto
         for alias in ["hawkeye.log." + name, name]:
             try:
                 module = __import__(alias)
