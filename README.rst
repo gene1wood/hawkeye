@@ -1,10 +1,13 @@
-# Hawkeye
+#######
+Hawkeye
+#######
 
 Hawkeye is a simple policy and compliance auditing tool for Amazon AWS.  It's designed to use user-supplied policy rules and compare them against AWS configurations, then report the pass/fail results to the user.
 
 Hawkeye is written using Python and Boto.
 
-## Summary of operation
+Summary of operation
+====================
 
 Hawkeye take two operations to complete a successful audit:
 
@@ -20,13 +23,15 @@ The logic to dump configurations locally is two fold:
     * More?
 * and because I initially wrote a scrape script before the idea to audit came be.  ;-)
 
-## Current State
+Current State
+=============
 
 This tool is fairly new and being actively developed.  It's not guarenteed to work at all for you at this time.
 
 That being said, I am working hard to get the initial tools working and to get my development more open and github friendly.
 
-## Installation
+Installation
+============
 
 Within a shell, execute the following commands
 
@@ -36,26 +41,30 @@ Within a shell, execute the following commands
 
 Once this is in a stable operating state, I'll add it to the python package repository.
 
-## Configuration
-
-Copy examples/config.py to ~/.hawkeye-conf.py
-
-See docs/configuration.markdown for more information (TODO: Add this doc)
-
-## Execution
-
-### Dumping configuration
+Configuration
+=============
 
 TODO
 
-### Auditing a dumpfile
+Execution
+=========
+
+Dumping configuration
+---------------------
 
 TODO
 
-## Creating new rules
+Auditing a dumpfile
+-------------------
 
 TODO
 
-## Contact
+Creating new rules
+------------------
+
+TODO
+
+Contact
+-------
 
 TODO
