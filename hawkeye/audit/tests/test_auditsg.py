@@ -44,8 +44,13 @@ class SshTestCase(unittest.TestCase):
         sg_deny_inbound_public_ssh = self.get_sg(22, '10.0.0.0/8')
         auditer = SecurityGroupAuditer(sg_deny_inbound_public_ssh)
         result = auditer.audit_ssh()
-        self.assertEqual(result['conforming'], True, "audit_ssh reported a "
-                         "policy violation when it shouldn't have")
+        self.assertEqual(result['conforming'],
+                         True,
+                         "audit_ssh reported a policy violation when it "
+                         "shouldn't have")
 
     def fetch_security_groups(self):
         return self.conn_ec2.get_all_security_groups()
+
+if __name__ == "__main__":
+    unittest.main()
